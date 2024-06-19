@@ -1,25 +1,28 @@
-name: Docker Image CI  # 定义此GitHub Actions的名称
+name: Docker Image CI
 
 on:
   push:
-    branches: [ "main" ]  # 触发条件：当代码推送到主分支时
+    branches: [ "main" ]
   pull_request:
-    branches: [ "main" ]  # 触发条件：当有针对主分支的拉取请求时
+    branches: [ "main" ]
   workflow_dispatch:  # 添加这一行以支持手动触发
 
-
 jobs:
-  build:  # 定义一个名为 "build" 的作业
-    runs-on: ubuntu-latest  # 选择最新的Ubuntu虚拟机作为运行环境
+  build:
+    runs-on: ubuntu-latest
 
-    steps:  # 定义此作业的步骤
-    - uses: actions/checkout@v4  # 第一步：使用 actions/checkout@v4 来检查出仓库代码
+    steps:
+    - uses: actions/checkout@v4
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v2  # 第二步：设置Docker Buildx，这是Docker多平台构建的工具
+      uses: docker/setup-buildx-action@v2
     - name: Login to DockerHub
-      uses: docker/login-action@v2  # 第三步：使用 docker/login-action@v2 登录到DockerHub
+      uses: docker/login-action@v2
       with:
-        username: ${{ secrets.DOCKER_USERNAME }}  # 从GitHub仓库的secrets中获取DockerHub用户名
-        password: ${{ secrets.DOCKER_PASSWORD }}  # 从GitHub仓库的secrets中获取DockerHub密码
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
     - name: Build the Docker image
-      run: sudo docker build --no-cache -t nvdocker:v1 -f ./Dockerfile .  # 第四步：运行Docker构建命令，不使用缓存，标记为nvdocker:v1，并指定Dockerfile位置
+      run: sudo docker build --no-cache -t nvdocker:v1 -f ./Dockerfile .
+    - name: Push the Docker image
+      run: |
+        docker tag nvdocker:v1 ${{ secrets.DOCKER_USERNAME }}/nvdocker:v1
+        docker push ${{ secrets.DOCKER_USERNAME }}/nvdocker:v1
